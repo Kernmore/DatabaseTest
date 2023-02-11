@@ -28,14 +28,18 @@ public class BankOperations {
         // Currency conversion at the exchange rate within accounts of one user
         convertCurrency(user1.getId(), Currency.EUR, Currency.UAH, 70d);
 
-        // Get total funds on one user's account in UAH
+        // Get total funds on one user's account in UA
         Double total1 = getTotalFundsInUAH(user1.getId());
-        System.out.printf("\nTotal funds in UAH: %.2f\n", total1);
+        System.out.printf("Total funds in UAH: %.2f\n", total1);
+        System.out.println();
         Double total2 = getTotalFundsInUAH(user2.getId());
-        System.out.printf("\nTotal funds in UAH: %.2f\n", total2);
+        System.out.printf("Total funds in UAH: %.2f\n", total2);
 
         // Check every account balance for one user
         checkEveryBalance(user1.getId());
+
+        checkEveryBalance(user2.getId());
+
 
         em.close();
         emFactory.close();
@@ -74,15 +78,18 @@ public class BankOperations {
         transaction.commit();
     }
 
+    //The method uses the PrivatBank API to get the exchange rate, it is only possible to change the currency from/to UAH
     private static Double convertCurrency(Long userId, Currency fromCurrency, Currency toCurrency, Double amount) {
 
         User user = em.find(User.class, userId);
         Account fromAccount = getAccountForUserAndType(user, fromCurrency);
         Account toAccount = getAccountForUserAndType(user, toCurrency);
 
-        ExchangeRate ex = new ExchangeRate(fromCurrency, toCurrency);
-        Double exchangeRate = ex.getRate();
-        Double convertedAmount = amount * exchangeRate;
+//        ExchangeRate ex = new ExchangeRate(fromCurrency, toCurrency);
+
+//        Double exchangeRate =  //ex.getRate();
+        //the method takes the from & to currencies, and the amount to calculate the difference
+        Double convertedAmount = ExchangeRate.getPrivatBankAPI(fromCurrency, toCurrency, amount);
 
         fromAccount.setBalance(fromAccount.getBalance() - (amount));
         toAccount.setBalance(toAccount.getBalance() + (convertedAmount));
